@@ -1,0 +1,114 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int key;
+    struct Node *left;
+    struct Node *right;
+};
+
+struct Node* createNode(int key) {
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+    node->key = key;
+    node->left = node->right = NULL;
+    return node;
+}
+
+int height(struct Node* node) {
+    if (node == NULL) return 0;
+    int leftHeight = height(node->left);
+    int rightHeight = height(node->right);
+    return (leftHeight > rightHeight ? leftHeight : rightHeight) + 1;
+}
+
+int balanceFactor(struct Node* node) {
+    if (node == NULL) return 0;
+    return height(node->left) - height(node->right);
+}
+
+struct Node* rotateRight(struct Node* y) {
+    struct Node* x = y->left;
+    struct Node* T2 = x->right;
+    x->right = y;
+    y->left = T2;
+    return x;
+}
+
+struct Node* rotateLeft(struct Node* x) {
+    struct Node* y = x->right;
+    struct Node* T2 = y->left;
+    y->left = x;
+    x->right = T2;
+    return y;
+}
+
+struct Node* insert(struct Node* node, int key) {
+    if (node == NULL) return createNode(key);
+    if (key < node->key) node->left = insert(node->left, key);
+    else if (key > node->key) node->right = insert(node->right, key);
+    else return node;
+
+    int balance = balanceFactor(node);
+    if (balance > 1 && key < node->left->key) return rotateRight(node);
+    if (balance < -1 && key > node->right->key) return rotateLeft(node);
+    if (balance > 1 && key > node->left->key) {
+        node->left = rotateLeft(node->left);
+        return rotateRight(node);
+    }
+    if (balance < -1 && key < node->right->key) {
+        node->right = rotateRight(node->right);
+        return rotateLeft(node);
+    }
+    return node;
+}
+
+void inorder(struct Node* root) {
+    if (root != NULL) {
+        inorder(root->left);
+        printf("%d ", root->key);
+        inorder(root->right);
+    }
+}
+
+void menu() {
+    printf("1. Insert\n");
+    printf("2. Inorder Traversal\n");
+    printf("3. Height\n");
+    printf("4. Balance Factor\n");
+    printf("5. Exit\n");
+}
+
+int main() {
+    struct Node* root = NULL;
+    int choice, key;
+
+    while (1) {
+        menu();
+        printf("Choose an option: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter key to insert: ");
+                scanf("%d", &key);
+                root = insert(root, key);
+                break;
+            case 2:
+                printf("Inorder traversal: ");
+                inorder(root);
+                printf("\n");
+                break;
+            case 3:
+                printf("Height of tree: %d\n", height(root));
+                break;
+            case 4:
+                printf("Balance factor: %d\n", balanceFactor(root));
+                break;
+            case 5:
+                exit(0);
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+    return 0;
+}
